@@ -2,9 +2,9 @@ name: ReceiptOCR
 channels:
   - defaults
 dependencies:
-  - python=3.6.9
+  - python=3.7
   - cudatoolkit=10.1
-  - cudnn=7.6
+  - cudnn=7.6.5
   - pip
   - pip:
       pip-tools
