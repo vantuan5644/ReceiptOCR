@@ -2,7 +2,7 @@
 
 git clone --recursive https://github.com/tensorflow/models.git
 
-cd models/research
+cd models/research || exit
 
 protoc object_detection/protos/*.proto --python_out=.
 
