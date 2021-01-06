@@ -27,8 +27,15 @@ python model_main_tf2.py -- \
   --pipeline_config_path=$PIPELINE_CONFIG_PATH \
   --alsologtostderr
 """
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["TF_DISABLE_RZ_CHECK"] = "1"
 
 import tensorflow.compat.v2 as tf
+
+gpus = tf.config.experimental.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(gpus[0], True)
+
 from absl import flags
 from object_detection import model_lib_v2
 

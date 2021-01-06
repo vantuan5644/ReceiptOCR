@@ -11,4 +11,5 @@ jupyterlab
 tensorflow-gpu>=2.3.0
 Pillow
 tf-models-official
-
+jedi<0.18.0 # To avoid conflict with ipython (7.19 and 7.18)
+imageio

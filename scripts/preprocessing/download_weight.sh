@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="d0"
+VERSION="d7"
 
 DOWNLOAD_DIR="weights"
 

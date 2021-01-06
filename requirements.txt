@@ -9,6 +9,7 @@ absl-py==0.10.0
     #   tensorboard
     #   tensorflow
     #   tensorflow-datasets
+    #   tensorflow-gpu
     #   tensorflow-metadata
     #   tf-slim
 anyio==2.0.2
@@ -16,7 +17,9 @@ anyio==2.0.2
 argon2-cffi==20.1.0
     # via notebook
 astunparse==1.6.3
-    # via tensorflow
+    # via
+    #   tensorflow
+    #   tensorflow-gpu
 async-generator==1.10
     # via nbclient
 attrs==20.3.0
@@ -64,11 +67,15 @@ entrypoints==0.3
 flask==1.1.2
     # via -r requirements.in
 flatbuffers==1.12
-    # via tensorflow
+    # via
+    #   tensorflow
+    #   tensorflow-gpu
 future==0.18.2
     # via tensorflow-datasets
 gast==0.3.3
-    # via tensorflow
+    # via
+    #   tensorflow
+    #   tensorflow-gpu
 gin-config==0.4.0
     # via tf-models-official
 google-api-core[grpc]==1.24.1
@@ -96,7 +103,9 @@ google-cloud-core==1.5.0
 google-crc32c==1.1.0
     # via google-resumable-media
 google-pasta==0.2.0
-    # via tensorflow
+    # via
+    #   tensorflow
+    #   tensorflow-gpu
 google-resumable-media==1.2.0
     # via google-cloud-bigquery
 googleapis-common-protos==1.52.0
@@ -108,10 +117,12 @@ grpcio==1.32.0
     #   google-api-core
     #   tensorboard
     #   tensorflow
+    #   tensorflow-gpu
 h5py==2.10.0
     # via
     #   keras
     #   tensorflow
+    #   tensorflow-gpu
 httplib2==0.18.1
     # via
     #   google-api-python-client
@@ -187,7 +198,9 @@ jupyterlab==3.0.1
 kaggle==1.5.10
     # via tf-models-official
 keras-preprocessing==1.1.2
-    # via tensorflow
+    # via
+    #   tensorflow
+    #   tensorflow-gpu
 keras==2.4.3
     # via -r requirements.in
 kiwisolver==1.3.1
@@ -240,6 +253,7 @@ numpy==1.19.5
     #   tensorboard
     #   tensorflow
     #   tensorflow-datasets
+    #   tensorflow-gpu
     #   tensorflow-hub
     #   tensorflow-model-optimization
     #   tf-models-official
@@ -250,7 +264,9 @@ oauthlib==3.1.0
 opencv-python-headless==4.5.1.48
     # via tf-models-official
 opt-einsum==3.3.0
-    # via tensorflow
+    # via
+    #   tensorflow
+    #   tensorflow-gpu
 packaging==20.8
     # via
     #   bleach
@@ -292,6 +308,7 @@ protobuf==3.14.0
     #   tensorboard
     #   tensorflow
     #   tensorflow-datasets
+    #   tensorflow-gpu
     #   tensorflow-hub
     #   tensorflow-metadata
 psutil==5.8.0
@@ -411,6 +428,7 @@ six==1.15.0
     #   tensorboard
     #   tensorflow
     #   tensorflow-datasets
+    #   tensorflow-gpu
     #   tensorflow-model-optimization
     #   tf-models-official
 sniffio==1.2.0
@@ -418,13 +436,19 @@ sniffio==1.2.0
 tensorboard-plugin-wit==1.7.0
     # via tensorboard
 tensorboard==2.4.0
-    # via tensorflow
+    # via
+    #   tensorflow
+    #   tensorflow-gpu
 tensorflow-addons==0.12.0
     # via tf-models-official
 tensorflow-datasets==4.1.0
     # via tf-models-official
 tensorflow-estimator==2.4.0
-    # via tensorflow
+    # via
+    #   tensorflow
+    #   tensorflow-gpu
+tensorflow-gpu==2.4.0
+    # via -r requirements.in
 tensorflow-hub==0.10.0
     # via tf-models-official
 tensorflow-metadata==0.26.0
@@ -432,13 +456,12 @@ tensorflow-metadata==0.26.0
 tensorflow-model-optimization==0.5.0
     # via tf-models-official
 tensorflow==2.4.0
-    # via
-    #   -r requirements.in
-    #   tf-models-official
+    # via tf-models-official
 termcolor==1.1.0
     # via
     #   tensorflow
     #   tensorflow-datasets
+    #   tensorflow-gpu
 terminado==0.9.2
     # via
     #   jupyter-server
@@ -484,6 +507,7 @@ typing-extensions==3.7.4.3
     #   importlib-metadata
     #   tensorflow
     #   tensorflow-datasets
+    #   tensorflow-gpu
 uritemplate==3.0.1
     # via google-api-python-client
 urllib3==1.26.2
@@ -503,8 +527,11 @@ wheel==0.36.2
     #   astunparse
     #   tensorboard
     #   tensorflow
+    #   tensorflow-gpu
 wrapt==1.12.1
-    # via tensorflow
+    # via
+    #   tensorflow
+    #   tensorflow-gpu
 zipp==3.4.0
     # via
     #   importlib-metadata
