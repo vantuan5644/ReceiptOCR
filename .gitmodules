@@ -2,3 +2,6 @@
 	path = automl
 	url = ./automl
 
+[submodule "models"]
+	path = models
+	url = ./models

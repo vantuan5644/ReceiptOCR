@@ -1,4 +1,3 @@
--c requirements.txt
 # numpy==1.19.3 # To avoid sanity bug on Windows 2004/H2
 numpy
 pandas
@@ -7,7 +6,9 @@ keras
 flask
 labelImg
 # labelme
-
+jupyterlab
+# tensorflow-object-detection-api
+tensorflow-gpu>=2.3.0
 Pillow
 tf-models-official
 
