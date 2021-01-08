@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 
-PIPELINE_CONFIG_PATH=alignment/efficientdet_d0_coco17_tpu-32/pipeline.config
+MODEL_NAME=efficientdet_d1_coco17_tpu-32
 
-CHECKPOINT_DIR=alignment/efficientdet_d0_coco17_tpu-32
+PIPELINE_CONFIG_PATH=alignment/$MODEL_NAME/pipeline.config
 
-OUTPUT_DIR=alignment/efficientdet_d0_coco17_tpu-32/weight
+CHECKPOINT_DIR=alignment/$MODEL_NAME
+
+OUTPUT_DIR=alignment/$MODEL_NAME/exported_model
 
 python scripts/exporting/exporter_main_v2.py \
- --input_type image_tensor --pipeline_config_path $PIPELINE_CONFIG_PATH \
- --trained_checkpoint_dir $CHECKPOINT_DIR \
- --output_directory $OUTPUT_DIR
+  --input_type image_tensor \
+  --pipeline_config_path $PIPELINE_CONFIG_PATH \
+  --trained_checkpoint_dir $CHECKPOINT_DIR \
+  --output_directory $OUTPUT_DIR

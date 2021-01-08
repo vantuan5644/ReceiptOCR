@@ -1,8 +1,8 @@
 #!/bin/bash
 
-VERSION="d0"
+VERSION="d1"
 
-DOWNLOAD_DIR="model_zoo"
+DOWNLOAD_DIR="pretrained_models"
 
 URL="http://download.tensorflow.org/models/object_detection/tf2/20200711/efficientdet_${VERSION}_coco17_tpu-32.tar.gz"
 
