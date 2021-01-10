@@ -11,7 +11,7 @@ python scripts/preprocessing/generate_tfrecord.py \
   --csv_path $DATASET_DIR/train_report.csv
 
 python scripts/preprocessing/generate_tfrecord.py \
-  --xml_dir $DATASET_DIR/train \
+  --xml_dir $DATASET_DIR/test \
   --labels_path $DATASET_DIR/label_map.pbtxt \
-  --output_path $DATASET_DIR/train.record \
+  --output_path $DATASET_DIR/test.record \
   --csv_path $DATASET_DIR/test_report.csv

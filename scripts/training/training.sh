@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-MODEL_NAME=efficientdet_d1_coco17_tpu-32
+MODEL_NAME=efficientdet_d6_coco17_tpu-32
 
 PIPELINE_CONFIG_PATH=alignment/$MODEL_NAME/pipeline.config
 

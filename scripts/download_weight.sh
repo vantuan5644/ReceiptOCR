@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="d1"
+VERSION="d6"
 
 DOWNLOAD_DIR="pretrained_models"
 
