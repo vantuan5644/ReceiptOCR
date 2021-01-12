@@ -26,7 +26,7 @@ tf.get_logger().setLevel('ERROR')  # Suppress TensorFlow logging (2)
 
 
 class AlignmentModel():
-    def __init__(self, model_dir="alignment/efficientdet_d1_coco17_tpu-32", label_map="datasets/COOP/label_map.pbtxt"):
+    def __init__(self, model_dir, label_map):
         # Enable GPU dynamic memory allocation
         gpus = tf.config.experimental.list_physical_devices('GPU')
         for gpu in gpus:
@@ -108,10 +108,12 @@ class AlignmentModel():
 
 
 if __name__ == "__main__":
-    test_images_dir = "datasets/COOP/padded (original)"
-    category_index = label_map_util.create_category_index_from_labelmap("datasets/COOP/label_map.pbtxt",
-                                                                        use_display_name=True)
-    align = AlignmentModel()
+    test_images_dir = "datasets/COOP/padded_1280"
+    model_dir = "pretrained_models/alignment/exported_models/efficientdet_d1_coco17_tpu-32"
+    label_map = "datasets/COOP/label_map.pbtxt"
+
+    category_index = label_map_util.create_category_index_from_labelmap(label_map, use_display_name=True)
+    align = AlignmentModel(model_dir, label_map)
     test_images = []
     for img_path in os.listdir(test_images_dir):
         if img_path.endswith('.jpg'):
@@ -120,12 +122,12 @@ if __name__ == "__main__":
 
     test_images = test_images[:]
 
-    # test_images = ['datasets/COOP/padded (original)/img_134_padded.jpg',
+    # test_images = ['datasets/COOP/padded_1280/img_12_padded.jpg',]
     #                'datasets/COOP/padded (original)/img_75_25_12_padded.jpg']
     results = align.get_alignment_result(test_images, return_image=True)
     for image_path, result in results.items():
         print(image_path)
-        print(result['detections'])
+        # print(result['detections'])
         dst_path = os.path.join('datasets', 'COOP', 'results', os.path.split(image_path)[1])
         plt.imsave(dst_path, result['image'])
         if is_completed_prediction(result['detections'], category_index):

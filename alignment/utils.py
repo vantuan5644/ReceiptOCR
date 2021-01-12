@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from PIL import Image
-from matplotlib import pyplot as plt
 
 
 def get_model_detections(detection_model, image_np):
@@ -185,17 +184,43 @@ def four_point_transform(image, pts, ordered=True):
     return warped
 
 
-def is_below(point_1, point_2):
-    return True if point_1[1] > point_2[1] else False
+def max_x_y(points):
+    max_ = points['bottom_right']
+    for _, point in points.items():
+        if point[0] + point[1] > max_[0] + max_[1]:
+            max_ = point
+    return max_
 
 
 def flip_to_vertical(points):
-    if is_below(points['top_left'], points['top_right']) and is_below(points['bottom_left'], points['bottom_right']):
-        return cv2.cv2.ROTATE_90_CLOCKWISE
-    elif is_below(points['top_right'], points['top_left']) and is_below(points['bottom_right'], points['bottom_left']):
+    bottom_right_point = max_x_y(points)
+    if np.array_equal(bottom_right_point, points['bottom_right']):
+        return None
+    elif np.array_equal(bottom_right_point, points['top_right']):
         return cv2.cv2.ROTATE_90_COUNTERCLOCKWISE
+    elif np.array_equal(bottom_right_point, points['bottom_left']):
+        return cv2.cv2.ROTATE_90_CLOCKWISE
+    elif np.array_equal(bottom_right_point, points['top_left']):
+        return cv2.cv2.ROTATE_180
     else:
         return None
+
+
+def align_image_4points(image_src, pts1, offset_lr=50, offset_tb=10):
+    h_w = cv2.minAreaRect(pts1)[1]
+    height, width = int(max(h_w)), int(min(h_w))
+
+    img_w, img_h = image_src.shape[0], image_src.shape[1]
+    pts2 = np.float32([[0 + offset_lr, 0 + offset_tb], [img_w - 1 - offset_lr, 0 + offset_tb],
+                       [img_w - 1 - offset_lr, img_h - 1 - offset_tb], [0 + offset_lr, img_h - 1 - offset_tb]])
+
+    #    print(np.float32(pts1), pts2.dtype)
+    M = cv2.getPerspectiveTransform(np.float32(pts1), pts2)
+    transformed_img = cv2.warpPerspective(image_src, M, (img_w, img_h))
+
+    transformed_img = cv2.resize(transformed_img, (width, height))
+
+    return transformed_img
 
 
 def get_transformed_image(img, prediction_results, category_index):
@@ -207,12 +232,24 @@ def get_transformed_image(img, prediction_results, category_index):
             points[name] = coords.astype(int)
         else:
             points[name] = box['bounding_box'].astype(int)
-    four_points = np.array([points['top_left'], points['top_right'], points['bottom_right'], points['bottom_left']])
-    img_transformed = four_point_transform(img, four_points, ordered=True)
 
-    flip_arg = flip_to_vertical(points)
-    if flip_arg is not None:
-        img_transformed = cv2.rotate(img_transformed, flip_arg)
+    # flip_arg = flip_to_vertical(points)
+    # if flip_arg is not None:
+    #     img = cv2.rotate(img, flip_arg)
+    #     # Map points to the new coordinate
+    #
+    # px_offset = 30
+    # points['top_left'] -= px_offset
+    # points['top_right'][0] += px_offset
+    # points['top_right'][1] -= px_offset
+    # points['bottom_left'][0] -= px_offset
+    # points['bottom_left'][1] += px_offset
+    # points['bottom_right'] += px_offset
+    # four_points = np.array([points['top_left'], points['top_right'],
+    #                         points['bottom_right'], points['bottom_left']])
+    # img_transformed = four_point_transform(img, four_points, ordered=False)
+    ordered_points = np.array([points['top_left'], points['top_right'], points['bottom_right'], points['bottom_left']])
+    img_transformed = align_image_4points(img, ordered_points, offset_lr=30, offset_tb=10)
 
     return img_transformed
 
