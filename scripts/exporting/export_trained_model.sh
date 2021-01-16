@@ -2,11 +2,11 @@
 
 MODEL_NAME=efficientdet_d1_coco17_tpu-32
 
-PIPELINE_CONFIG_PATH=alignment/$MODEL_NAME/pipeline.config
+PIPELINE_CONFIG_PATH=models/field_detection/$MODEL_NAME/pipeline.config
 
-CHECKPOINT_DIR=alignment/$MODEL_NAME
+CHECKPOINT_DIR=models/field_detection/$MODEL_NAME
 
-OUTPUT_DIR=alignment/$MODEL_NAME/exported_model
+OUTPUT_DIR=pretrained_models/field_detection/$MODEL_NAME/
 
 python scripts/exporting/exporter_main_v2.py \
   --input_type image_tensor \
