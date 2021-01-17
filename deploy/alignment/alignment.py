@@ -1,4 +1,5 @@
 import os
+from typing import List, Union
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -9,9 +10,9 @@ from object_detection.utils import config_util, label_map_util
 from object_detection.utils import visualization_utils as viz_utils
 from tqdm import tqdm
 
-from alignment.utils import get_model_detections, nms, load_image_into_numpy_array, is_completed_prediction, \
-    get_transformed_image
 from config import PROJECT_ROOT
+from .utils import get_model_detections, nms, load_image_into_numpy_array, is_completed_prediction, \
+    get_transformed_image
 
 matplotlib.use('TkAgg')
 os.chdir(PROJECT_ROOT)
@@ -26,7 +27,7 @@ tf.get_logger().setLevel('ERROR')  # Suppress TensorFlow logging (2)
 
 
 class AlignmentModel():
-    def __init__(self, model_dir, label_map):
+    def __init__(self, model_dir, category_index):
         # Enable GPU dynamic memory allocation
         gpus = tf.config.experimental.list_physical_devices('GPU')
         for gpu in gpus:
@@ -43,7 +44,7 @@ class AlignmentModel():
         ckpt = tf.compat.v2.train.Checkpoint(model=self.detection_model)
         ckpt.restore(os.path.join(checkpoint_dir, 'ckpt-0')).expect_partial()
 
-        self.category_index = label_map_util.create_category_index_from_labelmap(label_map, use_display_name=True)
+        self.category_index = category_index
 
     def get_alignment_result(self, image_paths, return_image=False, box_th=0.25, nms_th=0.5):
 
@@ -107,31 +108,34 @@ class AlignmentModel():
         return detection_results
 
 
-if __name__ == "__main__":
-    test_images_dir = "datasets/COOP/padded_1280"
-    model_dir = "pretrained_models/alignment/exported_models/efficientdet_d1_coco17_tpu-32"
-    label_map = "datasets/COOP/label_map.pbtxt"
+model_dir = "pretrained_models/alignment/efficientdet_d1_coco17_tpu-32"
+label_map = "pretrained_models/alignment/label_map.pbtxt"
+category_index = label_map_util.create_category_index_from_labelmap(label_map, use_display_name=True)
+align = AlignmentModel(model_dir=model_dir, category_index=category_index)
 
-    category_index = label_map_util.create_category_index_from_labelmap(label_map, use_display_name=True)
-    align = AlignmentModel(model_dir, label_map)
-    test_images = []
-    for img_path in os.listdir(test_images_dir):
-        if img_path.endswith('.jpg'):
-            img_path = os.path.join(test_images_dir, img_path)
-            test_images.append(img_path)
 
-    test_images = test_images[:]
+def get_alignment_results(image_paths: Union[List[str], str], return_image=True):
+    if isinstance(image_paths, str):
+        image_paths = [image_paths]
+    results = align.get_alignment_result(image_paths, return_image=return_image)
 
-    # test_images = ['datasets/COOP/padded_1280/img_12_padded.jpg',]
-    #                'datasets/COOP/padded (original)/img_75_25_12_padded.jpg']
-    results = align.get_alignment_result(test_images, return_image=True)
     for image_path, result in results.items():
         print(image_path)
         # print(result['detections'])
-        dst_path = os.path.join('datasets', 'COOP', 'results', os.path.split(image_path)[1])
-        plt.imsave(dst_path, result['image'])
+        results[image_path]['transformed_image'] = None
+
         if is_completed_prediction(result['detections'], category_index):
             img = plt.imread(image_path)
             img_transformed = get_transformed_image(img, result['detections'], category_index)
-            dst_path = os.path.join('datasets', 'COOP', 'transformed', os.path.split(image_path)[1])
-            plt.imsave(dst_path, img_transformed)
+            # dst_path = os.path.join('datasets', 'COOP', 'transformed', os.path.split(image_path)[1])
+            # plt.imsave(dst_path, img_transformed)
+            results[image_path]['transformed_image'] = img_transformed
+
+    """
+    results = {img_path_0: {'image': <np.ndarray>, 'detections': {}, 'transformed_image': <np.ndarray>},
+               img_path_1: {'image': <np.ndarray>, 'detections': {}, 'transformed_image': <np.ndarray>},
+               ...
+               }
+    """
+
+    return results

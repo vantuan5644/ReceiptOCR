@@ -230,21 +230,37 @@ def line_detection(img_path, plot_result=True):
 	x_max = img.shape[1]
 
 	rows = []
-	for i in range(len(left_borders)):
+
+	row_orders = reversed(range(min(len(left_borders), len(right_borders))))
+	for i in row_orders:
 		rows.append(img[left_borders[i]:right_borders[i], x_min:x_max])
 	return rows
 
 if __name__ == '__main__':
 
-	img_path = os.path.join(PROJECT_ROOT, 'datasets', 'OCR', 'product_attributes', 'img_2_padded_0.jpg')
-	model_path = 'pths/east_vgg16.pth'
-	device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-	model = EAST().to(device)
-	model.load_state_dict(torch.load(model_path))
-	model.eval()
-	img = Image.open(img_path)
-	boxes = detect(img, model, device)
-	plot_img = plot_boxes(img, boxes)
-	pass
+	# img_path = os.path.join(PROJECT_ROOT, 'datasets', 'OCR', 'label_text_16012020', 'img_6_padded_6.jpg')
+	# model_path = 'pths/east_vgg16.pth'
+	# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+	# model = EAST().to(device)
+	# model.load_state_dict(torch.load(model_path))
+	# model.eval()
+	# img = Image.open(img_path)
+	# boxes = detect(img, model, device)
+	# plot_img = plot_boxes(img, boxes)
 
+	dataset_dir = os.path.join(PROJECT_ROOT, 'datasets', 'OCR', 'label_text_16012020')
 
+	for img_path in os.listdir(dataset_dir):
+		img_path = os.path.join(dataset_dir, img_path)
+		img = plt.imread(img_path)
+		print(img_path)
+
+		if img.shape[0] > 32 and img.shape[1] > 32:
+
+			rows = line_detection(img_path)
+			for i, row in enumerate(rows):
+				filename, file_ext = os.path.splitext(os.path.split(img_path)[1])
+				dst_file = os.path.join(PROJECT_ROOT, 'datasets', 'OCR', 'products_sep', filename + '_' + str(i) + file_ext)
+				plt.imsave(dst_file, row)
+		else:
+			print('Image too small')

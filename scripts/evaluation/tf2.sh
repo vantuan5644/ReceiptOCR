@@ -2,7 +2,7 @@
 
 MODEL_NAME=efficientdet_d1_coco17_tpu-32
 
-PIPELINE_CONFIG_PATH=models/field_detection/$MODEL_NAME/pipeline.config
+PIPELINE_CONFIG_PATH=models/alignment/$MODEL_NAME/pipeline.config
 
 MODEL_DIR=models/field_detection/$MODEL_NAME
 
