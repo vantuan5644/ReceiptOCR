@@ -10,12 +10,10 @@ from object_detection.utils import config_util, label_map_util
 from object_detection.utils import visualization_utils as viz_utils
 from tqdm import tqdm
 
-from config import PROJECT_ROOT
 from .utils import get_model_detections, nms, load_image_into_numpy_array, is_completed_prediction, \
     get_transformed_image
 
 matplotlib.use('TkAgg')
-os.chdir(PROJECT_ROOT)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Suppress TensorFlow logging (1)
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -46,64 +44,61 @@ class AlignmentModel():
 
         self.category_index = category_index
 
-    def get_alignment_result(self, image_paths, return_image=False, box_th=0.25, nms_th=0.5):
+    def get_alignment_result(self, image, return_image=False, box_th=0.25, nms_th=0.5):
 
         detection_results = {}
-        for image_path in tqdm(image_paths):
-            detection_results[image_path] = {}
 
-            image_np = load_image_into_numpy_array(image_path)
+        # image_np = load_image_into_numpy_array(image_path)
+        detections = get_model_detections(self.detection_model, image)
 
-            detections = get_model_detections(self.detection_model, image_np)
+        key_of_interest = ['detection_classes', 'detection_boxes', 'detection_scores']
+        if box_th:  # filtering detection if a confidence threshold for boxes was given as a parameter
+            for key in key_of_interest:
+                scores = detections['detection_scores']
+                current_array = detections[key]
+                filtered_current_array = current_array[scores > box_th]
+                detections[key] = filtered_current_array
 
-            key_of_interest = ['detection_classes', 'detection_boxes', 'detection_scores']
-            if box_th:  # filtering detection if a confidence threshold for boxes was given as a parameter
-                for key in key_of_interest:
-                    scores = detections['detection_scores']
-                    current_array = detections[key]
-                    filtered_current_array = current_array[scores > box_th]
-                    detections[key] = filtered_current_array
+        if nms_th:  # filtering rectangles if nms threshold was passed in as a parameter
+            # creating a zip object that will contain model output info as
 
-            if nms_th:  # filtering rectangles if nms threshold was passed in as a parameter
-                # creating a zip object that will contain model output info as
-
-                output_info = list(zip(detections['detection_boxes'],
-                                       detections['detection_scores'],
-                                       detections['detection_classes']
-                                       )
+            output_info = list(zip(detections['detection_boxes'],
+                                   detections['detection_scores'],
+                                   detections['detection_classes']
                                    )
-                boxes, scores, classes = nms(output_info)
+                               )
+            boxes, scores, classes = nms(output_info)
 
-                detections['detection_boxes'] = np.array(boxes)  # format: [y1, x1, y2, x2]
-                detections['detection_scores'] = np.array(scores)
-                detections['detection_classes'] = np.array(classes)
+            detections['detection_boxes'] = np.array(boxes)  # format: [y1, x1, y2, x2]
+            detections['detection_scores'] = np.array(scores)
+            detections['detection_classes'] = np.array(classes)
 
-            image_h, image_w, _ = image_np.shape
+        image_h, image_w, _ = image.shape
 
-            result_ = []
-            for b, s, c in zip(detections['detection_boxes'], detections['detection_scores'],
-                               detections['detection_classes']):
-                y1abs, x1abs = b[0] * image_h, b[1] * image_w
-                y2abs, x2abs = b[2] * image_h, b[3] * image_w
-                result_.append({'bounding_box': np.array([x1abs, y1abs, x2abs, y2abs]), 'class': c + 1, 'score': s})
-            detection_results[image_path]['detections'] = result_
+        result_ = []
+        for b, s, c in zip(detections['detection_boxes'], detections['detection_scores'],
+                           detections['detection_classes']):
+            y1abs, x1abs = b[0] * image_h, b[1] * image_w
+            y2abs, x2abs = b[2] * image_h, b[3] * image_w
+            result_.append({'bounding_box': np.array([x1abs, y1abs, x2abs, y2abs]), 'class': c + 1, 'score': s})
+        detection_results['detections'] = result_
 
-            if return_image:
-                label_id_offset = 1
-                image_np_with_detections = image_np.copy()
+        if return_image:
+            label_id_offset = 1
+            image_np_with_detections = image.copy()
 
-                viz_utils.visualize_boxes_and_labels_on_image_array(
-                    image_np_with_detections,
-                    detections['detection_boxes'],
-                    detections['detection_classes'] + label_id_offset,
-                    detections['detection_scores'],
-                    self.category_index,
-                    use_normalized_coordinates=True,
-                    max_boxes_to_draw=200,
-                    min_score_thresh=box_th,
-                    agnostic_mode=False,
-                    line_thickness=5)
-                detection_results[image_path]['image'] = image_np_with_detections
+            viz_utils.visualize_boxes_and_labels_on_image_array(
+                image_np_with_detections,
+                detections['detection_boxes'],
+                detections['detection_classes'] + label_id_offset,
+                detections['detection_scores'],
+                self.category_index,
+                use_normalized_coordinates=True,
+                max_boxes_to_draw=200,
+                min_score_thresh=box_th,
+                agnostic_mode=False,
+                line_thickness=5)
+            detection_results['image'] = image_np_with_detections
 
         return detection_results
 
@@ -114,28 +109,23 @@ category_index = label_map_util.create_category_index_from_labelmap(label_map, u
 align = AlignmentModel(model_dir=model_dir, category_index=category_index)
 
 
-def get_alignment_results(image_paths: Union[List[str], str], return_image=True):
-    if isinstance(image_paths, str):
-        image_paths = [image_paths]
-    results = align.get_alignment_result(image_paths, return_image=return_image)
+def get_alignment_results(image: np.ndarray):
+    results = align.get_alignment_result(image, return_image=True)
 
-    for image_path, result in results.items():
-        print(image_path)
-        # print(result['detections'])
-        results[image_path]['transformed_image'] = None
 
-        if is_completed_prediction(result['detections'], category_index):
-            img = plt.imread(image_path)
-            img_transformed = get_transformed_image(img, result['detections'], category_index)
-            # dst_path = os.path.join('datasets', 'COOP', 'transformed', os.path.split(image_path)[1])
-            # plt.imsave(dst_path, img_transformed)
-            results[image_path]['transformed_image'] = img_transformed
+    # print(result['detections'])
+    results['transformed_image'] = None
+
+    if is_completed_prediction(results['detections'], category_index):
+        img_transformed = get_transformed_image(results['image'], results['detections'], category_index)
+        # dst_path = os.path.join('datasets', 'COOP', 'transformed', os.path.split(image_path)[1])
+        # plt.imsave(dst_path, img_transformed)
+        results['transformed_image'] = img_transformed
 
     """
-    results = {img_path_0: {'image': <np.ndarray>, 'detections': {}, 'transformed_image': <np.ndarray>},
-               img_path_1: {'image': <np.ndarray>, 'detections': {}, 'transformed_image': <np.ndarray>},
-               ...
-               }
+    results = {'image': <np.ndarray>, 'detections': {}, 'transformed_image': <np.ndarray>}
     """
 
     return results
+
+
