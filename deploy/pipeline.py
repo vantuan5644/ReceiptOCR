@@ -1,4 +1,5 @@
 import json
+import os
 from io import BytesIO
 
 import cv2
@@ -15,6 +16,24 @@ from deploy.ocr.NER import get_NER_results
 from deploy.ocr.ocr import get_ocr_results
 
 matplotlib.use('TkAgg')
+
+
+def padding_image(src):
+    """
+    @param padding: 'mirror', 'zeros'
+    """
+
+    top = int(0.1 * src.shape[0])  # shape[0] = rows
+    bottom = top
+    left = int(0.1 * src.shape[1])  # shape[1] = cols
+    right = left
+
+
+    value = [0, 0, 0]
+    borderType = cv2.BORDER_CONSTANT
+    dst = cv2.copyMakeBorder(src, top, bottom, left, right, borderType, None, value)
+
+    return dst
 
 def convert_to_base64(image):
     buff = BytesIO()
@@ -59,12 +78,12 @@ def ocr_pipeline(image: np.ndarray):
     for field in field_detection_results['cropped_fields']:
         for field_name, field_image in field.items():
             if field_name != 'product_attributes':
-                results['ocr'][field_name] = {'image': convert_to_base64(field_image), 'text': get_ocr_results(field_image)}
+                results['ocr'][field_name] = {'image': convert_to_base64(field_image), 'text': get_ocr_results(field_image)['single_line']}
             else:
                 product_attributes.append({'image': field_image})
 
     for product in product_attributes:
-        text = get_ocr_results(product['image']).replace('\\n', ' ')
+        text = get_ocr_results(product['image'])['multiple_lines'].replace('\\n', ' ')
         product['image'] = convert_to_base64(product['image'])
         NER_results = get_NER_results(text)
         for key, value in NER_results.items():
@@ -77,6 +96,8 @@ if __name__ == '__main__':
     img = '/home/vantuan5644/PycharmProjects/ReceiptOCR/datasets/COOP/bill_coop_04/bill_coop_04/img_8.jpg'
     img = plt.imread(img)
     print(img.dtype)
+
+
     dst_width = 1280
     scale_ratio = dst_width / img.shape[1]
     width = dst_width
@@ -85,7 +106,9 @@ if __name__ == '__main__':
     # resize image
     resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 
-    results = ocr_pipeline(resized)
+    padded = padding_image(resized)
+
+    results = ocr_pipeline(padded)
     with open('data.json', 'w') as f:
         f.write(json.dumps(results))
 

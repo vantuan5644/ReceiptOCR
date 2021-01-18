@@ -128,4 +128,11 @@ def get_alignment_results(image: np.ndarray):
 
     return results
 
+if __name__ == '__main__':
+    dataset_dir = '/home/vantuan5644/PycharmProjects/ReceiptOCR/datasets/bill_coop_04'
+    img_files = [os.path.join(dataset_dir, file) for file in os.listdir(dataset_dir)]
+    for file in img_files:
+        img = plt.imread(file)
 
+        if get_alignment_results(img)['transformed_image'] is None:
+            os.remove(file)

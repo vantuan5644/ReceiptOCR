@@ -1,6 +1,9 @@
-IMAGE_SRC_PREFIX = "data:image/png;base64,"
+IMAGE_SRC_PREFIX = "data:image/png;base64,";
+$('.alert-warning').removeClass("show")
 
 $("#upload-receipt").click(function(evt){
+    $('.alert-warning').addClass("hidden")
+    $('.alert-warning').removeClass("show")
     document.getElementById("input-receipt").click()
 })
 
@@ -9,12 +12,24 @@ $("#input-receipt").change(function(evt){
     image.src = URL.createObjectURL(evt.target.files[0]);
     getBase64Image(evt.target.files[0])
     .then(base64Img => {
-        console.log(base64Img)
         $.post("/uploadReceipt", {receipt: base64Img }, function(data, status){
+            console.log("data", data)
             if (data){
-                if (data == "fail"){
-                    alert("Cannot align the given input. Please select another image!")
-                    return
+                if (data == "\"fail\""){
+                    console.log("Cannot align the given input. Please select another image!")
+                    $('.alert-warning').removeClass("hidden")
+                    $('.alert-warning').addClass("show")
+                    document.getElementById("alignment").src = "static/images/default-placeholder.png"
+                    document.getElementById("alignment-crop").src = "static/images/default-placeholder.png"
+                    document.getElementById("field_detection").src = "static/images/default-placeholder.png"
+                    document.getElementById("market_name").src = "static/images/default-placeholder.png"
+                    document.getElementById("bill_code").src = "static/images/default-placeholder.png"
+                    document.getElementById("bill_code").src = "static/images/default-placeholder.png"
+                    document.getElementById("market_name_text").innerHTML = ""
+                    document.getElementById("date_text").innerHTML = ""
+                    document.getElementById("bill_code_text").innerHTML = ""
+                    $("#product-attr-board").empty()
+                    return false
                 }
                 model = JSON.parse(data)
                 console.log(model["alignment"])
@@ -38,20 +53,34 @@ $("#input-receipt").change(function(evt){
                         marketNameSrc = IMAGE_SRC_PREFIX + ocrAttr["market_name"]["image"]
                         marketNameText = ocrAttr["market_name"]["text"]
                         document.getElementById("market_name").src = marketNameSrc
+                        document.getElementById("market_name_text").innerHTML = marketNameText
+                    }else{
+                        document.getElementById("market_name").src = "static/images/default-placeholder.png"
+                        document.getElementById("market_name_text").innerHTML = ""
                     }
                     if (ocrAttr["date"]){
                         dateSrc = IMAGE_SRC_PREFIX + ocrAttr["date"]["image"]
                         dateText = ocrAttr["date"]["text"]
                         document.getElementById("date").src = dateSrc
+                        document.getElementById("date_text").innerHTML = dateText
+                    }else{
+                        document.getElementById("date").src = "static/images/default-placeholder.png"
+                        document.getElementById("date_text").innerHTML = ""
                     }
                     if (ocrAttr["bill_code"]){
                         billCodeSrc = IMAGE_SRC_PREFIX + ocrAttr["bill_code"]["image"]
                         billCodeText = ocrAttr["bill_code"]["text"]
                         document.getElementById("bill_code").src = billCodeSrc
+                        document.getElementById("bill_code_text").innerHTML = billCodeText
+                    }else{
+                        document.getElementById("bill_code").src = "static/images/default-placeholder.png"
+                        document.getElementById("bill_code_text").innerHTML = ""
                     }
                     productAttrs = ocrAttr["product_attributes"]
                     if (Array.isArray(productAttrs)){
+                        $("#product-attr-board").empty()
                         productAttrs.forEach(function(item){
+                            console.log(item)
                             imgSrc = IMAGE_SRC_PREFIX + item["image"]
                             $("#product-attr-board").append(`
                             <div class="col-md-6">

@@ -1,4 +1,4 @@
-from flask import rend0.153er_template
+from flask import render_template
 import pandas as pd 
 import numpy as np
 import os
@@ -8,7 +8,7 @@ from PIL import Image
 import cv2
 import base64
 import io
-from deploy.pipeline import ocr_pipeline
+from deploy.pipeline import ocr_pipeline, padding_image
 
 
 def render_dashboard():
@@ -21,7 +21,19 @@ def receipt_parser(base64_img):
     cv2.imwrite("upload-receipt.jpg", image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     # TODO: put pipeline here...
-    results = ocr_pipeline(image)
+
+    dst_width = 1280
+    scale_ratio = dst_width / image.shape[1]
+    width = dst_width
+    height = int(image.shape[0] * scale_ratio)
+    dim = (width, height)
+    # resize image
+    resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
+
+    padded = padding_image(resized)
+
+    results = ocr_pipeline(padded)
+
     print(results)
     # "fail
     results = json.dumps(results)
