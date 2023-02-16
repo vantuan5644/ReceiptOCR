@@ -8,11 +8,11 @@ The OCR models used in this project include a receipt corners detector based on 
 
 1. Clone this repository to your local machine
 
-```git clone https://github.com/<username>/automatic-receipt-ocr-pytorch.git```
+```git clone https://github.com/vantuan5644/ReceiptOCR.git```
 
 2. Navigate to the project directory
 
-```cd automatic-receipt-ocr-pytorch```
+```cd ReceiptOCR```
 
 3. Install the necessary dependencies
 
